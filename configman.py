@@ -82,4 +82,3 @@ class ConfigMan:
             return str(self.data['HTTPInjection']['post']['body'])
         except:
             return DEFAULT_INJECT_MSG
-print(ConfigMan().getInjectMsg())
