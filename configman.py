@@ -8,8 +8,8 @@ DEFAULT_INJECT_MSG = "DEFAULT_INJECT_MSG"
 
 class ConfigMan:
     def __init__(self):
-        with open('config.json') as conf_file:
-            self.data = json.load(conf_file)
+        with open('config.json') as confFile:
+            self.data = json.load(confFile)
 
     def getPort(self):
         try:
