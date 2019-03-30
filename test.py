@@ -6,8 +6,6 @@ def proxyAgent(clientSocket, clientAddress):
 		while True:
 			httpRequest = clientSocket.recv(100000000).decode()
 			if httpRequest:
-				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-				s.settimeout(50)
 
 				httpRequest = httpRequest.replace("1.1","1.0")
 
@@ -39,17 +37,17 @@ def proxyAgent(clientSocket, clientAddress):
 					webserver = temp[:port_pos]
 				print((webserver, port))
 
-				s.connect((webserver, port))
 
-
-				s.sendall(httpRequest.encode())
-				while True:
-					data = s.recv(100000000)
-					if (len(data) > 0):
-						clientSocket.send(data)
-					else:
-						break
-				s.close()
+				with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+					s.settimeout(50)
+					s.connect((webserver, port))
+					s.sendall(httpRequest.encode())
+					while True:
+						data = s.recv(100000000)
+						if (len(data) > 0):
+							clientSocket.send(data)
+						else:
+							break
 			else:
 				break
 	except:
@@ -57,13 +55,13 @@ def proxyAgent(clientSocket, clientAddress):
 	finally:
 		print("dead")
 
-sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
-sock.bind(('127.0.0.1',8080))
-sock.listen(50)
-while True:
-	(clientSocket, clientAddress) = sock.accept()
-	print ("New user")
-	t = threading.Thread(target=proxyAgent,args=(clientSocket, clientAddress))
-	t.daemon = True
-	t.start()
+with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as sock:
+	sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+	sock.bind(('127.0.0.1',8080))
+	sock.listen(2500)
+	while True:
+		(clientSocket, clientAddress) = sock.accept()
+		print ("New user")
+		t = threading.Thread(target=proxyAgent,args=(clientSocket, clientAddress))
+		t.daemon = True
+		t.start()
