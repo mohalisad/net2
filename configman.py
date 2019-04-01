@@ -7,8 +7,8 @@ DEFAULT_USER_AGENT = "My Proxy Server"
 DEFAULT_INJECT_MSG = "DEFAULT_INJECT_MSG"
 
 class ConfigMan:
-    def __init__(self):
-        with open('config.json') as confFile:
+    def __init__(self,fileName):
+        with open(fileName) as confFile:
             self.data = json.load(confFile)
 
     def getPort(self):

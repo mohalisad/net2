@@ -5,7 +5,8 @@ class RequsetMan:
     def convert(self,httpReq):
         convertedReq = ''
         host = ''
-        httpRequest = httpReq.decode().replace("HTTP/1.1","HTTP/1.0")
+        loc = httpReq.find(b'\r\n\r\n')
+        httpRequest = httpReq[:loc].decode().replace("HTTP/1.1","HTTP/1.0")
         lines = httpRequest.split('\r\n')
         for line in lines:
             key = line.split(':')[0]
@@ -21,4 +22,4 @@ class RequsetMan:
         port = 80
         if len(host) > 1:
             port = int(host[1])
-        return convertedReq.encode(),url,port
+        return convertedReq.encode() + httpReq[loc+2:],url,port
