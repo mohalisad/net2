@@ -15,17 +15,23 @@ class ProxyMan:
         self.log   = LogMan(conf.getLogEnable(),conf.getLogFile())
         self.rqman = RequsetMan(conf.getInjectEnable(),conf.getInjectMsg(),conf.getRestrictEnable(),conf.getRestrictTarget())
         self.post  = PostMan(ADMIN_MAIL)
+
+        self.log.write('Proxy launched')
     def run(self):
+        self.log.write('Creating server socket...')
         with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as sock:
             sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+            self.log.write('Binding socket to port {}...'.format(self.conf.getPort()))
             sock.bind(('127.0.0.1',self.conf.getPort()))
             sock.listen(2500)
+            self.log.write('Listening for incoming requests...')
             while True:
                 (clientSocket, clientAddress) = sock.accept()
                 t = threading.Thread(target=self.proxyAgent,args=(clientSocket, clientAddress))
                 t.daemon = True
                 t.start()
     def proxyAgent(self,clientSocket, clientAddress):
+        self.log.write('Accepted a request from client!')
         try:
             while True:
                 rcvData = bytes()
