@@ -24,6 +24,7 @@ class ProxyMan:
     def proxyAgent(self,clientSocket, clientAddress):
         try:
             while True:
+                rcvData = bytes()
                 httpRequest = clientSocket.recv(100000000)
                 if httpRequest:
                     httpRequest,webserver, port = self.rqman.convert(httpRequest)
@@ -34,9 +35,17 @@ class ProxyMan:
                         while True:
                             data = s.recv(100000000)
                             if (len(data) > 0):
-                                clientSocket.send(data)
+                                rcvData += data
                             else:
                                 break
+                        loc = rcvData.find('body'.encode())
+                        if loc != -1:
+                            print('here')
+                            loc += rcvData[loc:].find('>'.encode()) + 1
+                            msg = '<div style="text-align:right;position: -webkit-sticky;position: sticky;top: 0;color: yellow;background-color: black;font-size: 20px;z-index: 999999;padding:10px;">I will stick to the screen when you reach my scroll position</div>'
+                            rcvData = rcvData[:loc] + msg + rcvData[loc:]
+                        clientSocket.send(rcvData)
+
                 else:
                     break
         except:
