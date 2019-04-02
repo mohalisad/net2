@@ -20,7 +20,7 @@ class RequsetMan:
             key = line.split(':')[0]
             if key == 'Host':
                 host = line[line.index(':')+1:].strip()
-            if key != 'Proxy-connection':
+            if key != 'Proxy-connection' and key != 'Accept-Encoding':
                 if key == 'User-Agent' and self.privacyEnable:
                     convertedReq += 'User-Agent: ' + self.userAgent + '\r\n'
                 else:
@@ -31,10 +31,11 @@ class RequsetMan:
         if len(host) > 1:
             port = int(host[1])
         convertedURL = self.__urlConvert(url)
-        if convertedURL in self.blockNotify:
-            raise ValueError(True ,convertedURL,'blocked url')
-        if convertedURL in self.block:
-            raise ValueError(False,convertedURL,'blocked url')
+        if self.restrict:
+            if convertedURL in self.blockNotify:
+                raise ValueError(True ,convertedURL,'blocked url')
+            if convertedURL in self.block:
+                raise ValueError(False,convertedURL,'blocked url')
         return convertedReq.encode() + httpReq[loc+2:],url,port
     def __urlConvert(self,url):
         url     = str(url).lower()

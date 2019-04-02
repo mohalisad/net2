@@ -5,6 +5,7 @@ from reqman    import RequsetMan
 from configman import ConfigMan
 from postman   import PostMan
 from userman   import UserMan
+from injectman import InjectMan
 
 CONFIG_FILE  = 'config.json'
 ADMIN_MAIL   = 'mohammadalisadraei@gmail.com'
@@ -12,12 +13,13 @@ RCV_MAX_SIZE = 100000000
 
 class ProxyMan:
     def __init__(self):
-        conf         = ConfigMan(CONFIG_FILE)
-        self.conf    = conf
-        self.log     = LogMan(conf.getLogEnable(),conf.getLogFile())
-        self.rqman   = RequsetMan(conf.getInjectEnable(),conf.getInjectMsg(),conf.getRestrictEnable(),conf.getRestrictTarget())
-        self.post    = PostMan(ADMIN_MAIL)
-        self.userMan = UserMan(conf.getUsers())
+        conf          = ConfigMan(CONFIG_FILE)
+        self.conf     = conf
+        self.log      = LogMan(conf.getLogEnable(),conf.getLogFile())
+        self.rqman    = RequsetMan(conf.getPrivacyEnable(),conf.getPrivacyAgent(),conf.getRestrictEnable(),conf.getRestrictTarget())
+        self.post     = PostMan(ADMIN_MAIL)
+        self.userMan  = UserMan(conf.getUsers())
+        self.injector = InjectMan(conf.getInjectEnable(),conf.getInjectMsg())
 
         self.log.write('Proxy launched')
 
@@ -56,6 +58,7 @@ class ProxyMan:
                                 self.userMan.useTraffic(clientAddress[0],len(data))
                             else:
                                 break
+                        rcvData = self.injector.inject(rcvData)
                         clientSocket.send(rcvData)
                 else:
                     break
