@@ -37,7 +37,7 @@ class RequsetMan:
             raise ValueError(False,convertedURL,'blocked url')
         return convertedReq.encode() + httpReq[loc+2:],url,port
     def __urlConvert(self,url):
-        url     = url.lower()
+        url     = str(url).lower()
         wwwLoc  = url.find('www.')
         httpLoc = url.find('http://')
         if wwwLoc != -1:
