@@ -1,16 +1,20 @@
 import socket
 import threading
-from logman import LogMan
-from reqman import RequsetMan
+from logman    import LogMan
+from reqman    import RequsetMan
 from configman import ConfigMan
+from postman   import PostMan
 
 CONFIG_FILE = 'config.json'
+ADMIN_MAIL  = 'mohammadalisadraei@gmail.com'
 
 class ProxyMan:
     def __init__(self):
-        self.conf = ConfigMan(CONFIG_FILE)
-        self.log = LogMan(self.conf.getLogEnable(),self.conf.getLogFile())
-        self.rqman = RequsetMan(self.conf.getInjectEnable(),self.conf.getInjectMsg())
+        conf       = ConfigMan(CONFIG_FILE)
+        self.conf  = conf
+        self.log   = LogMan(conf.getLogEnable(),conf.getLogFile())
+        self.rqman = RequsetMan(conf.getInjectEnable(),conf.getInjectMsg(),conf.getRestrictEnable(),conf.getRestrictTarget())
+        self.post  = PostMan(ADMIN_MAIL)
     def run(self):
         with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as sock:
             sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
@@ -38,19 +42,15 @@ class ProxyMan:
                                 rcvData += data
                             else:
                                 break
-                        loc = rcvData.find('body'.encode())
-                        if loc != -1:
-                            print('here')
-                            loc += rcvData[loc:].find('>'.encode()) + 1
-                            msg = '<div style="text-align:right;position: -webkit-sticky;position: sticky;top: 0;color: yellow;background-color: black;font-size: 20px;z-index: 999999;padding:10px;">I will stick to the screen when you reach my scroll position</div>'
-                            rcvData = rcvData[:loc] + msg + rcvData[loc:]
                         clientSocket.send(rcvData)
-
                 else:
                     break
+        except ValueError as err:
+            if err.args[0] :
+                self.post.sendBlockedAccess(clientAddress[0],err.args[1])
         except:
             pass
         finally:
-            pass
+            clientSocket.close()
 if __name__ == '__main__':
     ProxyMan().run()

@@ -1,7 +1,15 @@
 class RequsetMan:
-    def __init__(self,privacyMode,userAgent):
-        self.enable    = privacyMode
-        self.userAgent = userAgent
+    def __init__(self,privacyMode,userAgent,restrictEnable,restrictList):
+        self.privacyEnable = privacyMode
+        self.userAgent     = userAgent
+        self.restrict      = restrictEnable
+        self.blockNotify   = []
+        self.block         = []
+        for item in restrictList:
+            if str(item['notify']).lower() == 'true':
+                self.blockNotify.append(self.__urlConvert(item['URL']))
+            else:
+                self.block.append(self.__urlConvert(item['URL']))
     def convert(self,httpReq):
         convertedReq = ''
         host = ''
@@ -13,7 +21,7 @@ class RequsetMan:
             if key == 'Host':
                 host = line[line.index(':')+1:].strip()
             if key != 'Proxy-connection':
-                if key == 'User-Agent' and self.enable:
+                if key == 'User-Agent' and self.privacyEnable:
                     convertedReq += 'User-Agent: ' + self.userAgent + '\r\n'
                 else:
                     convertedReq += line + '\r\n'
@@ -22,4 +30,23 @@ class RequsetMan:
         port = 80
         if len(host) > 1:
             port = int(host[1])
+        if url in self.blockNotify:
+            raise ValueError(True ,url,'blocked url')
+        if url in self.block:
+            raise ValueError(False,url,'blocked url')
         return convertedReq.encode() + httpReq[loc+2:],url,port
+    def __urlConvert(self,url):
+        url     = url.lower()
+        wwwLoc  = url.find('www.')
+        httpLoc = url.find('http://')
+        if wwwLoc != -1:
+            wwwLoc += 4
+            url = url[wwwLoc:]
+        else:
+            if httpLoc != -1:
+                httpLoc += 7
+                url = url[httpLoc:]
+        end = url.find('/')
+        if end != -1:
+            url = url[:end]
+        return url
