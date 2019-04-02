@@ -30,10 +30,11 @@ class RequsetMan:
         port = 80
         if len(host) > 1:
             port = int(host[1])
-        if url in self.blockNotify:
-            raise ValueError(True ,url,'blocked url')
-        if url in self.block:
-            raise ValueError(False,url,'blocked url')
+        convertedURL = self.__urlConvert(url)
+        if convertedURL in self.blockNotify:
+            raise ValueError(True ,convertedURL,'blocked url')
+        if convertedURL in self.block:
+            raise ValueError(False,convertedURL,'blocked url')
         return convertedReq.encode() + httpReq[loc+2:],url,port
     def __urlConvert(self,url):
         url     = url.lower()
