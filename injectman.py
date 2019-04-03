@@ -1,13 +1,17 @@
-HTML  = '<div style="{}">{}</div>'
+HTML       = '<div style="{}">{}</div>'
+BACKGROUND = 'black'
+FOREGROUND = 'yellow'
+FONT_SIZE  = '20px'
 STYLE = 'text-align:right;position: -webkit-sticky;\
-position: sticky;top: 0;color: yellow;background-color: black;\
-font-size: 20px;z-index: 999999;padding:10px;'
+position: sticky;top: 0;color:{};background-color:{};\
+font-size:{};z-index: 999999;padding:10px;'
 
 class InjectMan:
     def __init__(self,injectEnable,injectMsg):
         self.enable   = injectEnable
         self.msg      = injectMsg
-        self.html_msg = HTML.format(STYLE,injectMsg).encode()
+        myStyle       = STYLE.format(FOREGROUND,BACKGROUND,FONT_SIZE)
+        self.html_msg = HTML.format(myStyle,injectMsg).encode()
 
     def inject(self,packet):
         if self.enable:

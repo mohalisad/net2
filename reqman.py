@@ -1,3 +1,19 @@
+def urlConvert(self,url):
+    url     = str(url).lower()
+    wwwLoc  = url.find('www.')
+    httpLoc = url.find('http://')
+    if wwwLoc != -1:
+        wwwLoc += 4
+        url = url[wwwLoc:]
+    else:
+        if httpLoc != -1:
+            httpLoc += 7
+            url = url[httpLoc:]
+    end = url.find('/')
+    if end != -1:
+        url = url[:end]
+    return url
+
 class RequsetMan:
     def __init__(self,privacyMode,userAgent,restrictEnable,restrictList):
         self.privacyEnable = privacyMode
@@ -7,9 +23,9 @@ class RequsetMan:
         self.block         = []
         for item in restrictList:
             if str(item['notify']).lower() == 'true':
-                self.blockNotify.append(self.__urlConvert(item['URL']))
+                self.blockNotify.append(urlConvert(item['URL']))
             else:
-                self.block.append(self.__urlConvert(item['URL']))
+                self.block.append(urlConvert(item['URL']))
     def convert(self,httpReq):
         convertedReq = ''
         host = ''
@@ -30,25 +46,10 @@ class RequsetMan:
         port = 80
         if len(host) > 1:
             port = int(host[1])
-        convertedURL = self.__urlConvert(url)
+        convertedURL = urlConvert(url)
         if self.restrict:
             if convertedURL in self.blockNotify:
                 raise ValueError(True ,convertedURL,'blocked url')
             if convertedURL in self.block:
                 raise ValueError(False,convertedURL,'blocked url')
         return convertedReq.encode() + httpReq[loc+2:],url,port
-    def __urlConvert(self,url):
-        url     = str(url).lower()
-        wwwLoc  = url.find('www.')
-        httpLoc = url.find('http://')
-        if wwwLoc != -1:
-            wwwLoc += 4
-            url = url[wwwLoc:]
-        else:
-            if httpLoc != -1:
-                httpLoc += 7
-                url = url[httpLoc:]
-        end = url.find('/')
-        if end != -1:
-            url = url[:end]
-        return url
