@@ -1,11 +1,12 @@
 import socket
 import threading
-from logman    import LogMan
-from reqman    import RequsetMan
-from configman import ConfigMan
-from postman   import PostMan
-from userman   import UserMan
-from injectman import InjectMan
+from logman       import LogMan
+from reqman       import RequsetMan
+from configman    import ConfigMan
+from postman      import PostMan
+from userman      import UserMan
+from injectman    import InjectMan
+from httpresponse import HTTPResponse
 
 CONFIG_FILE  = 'config.json'
 ADMIN_MAIL   = 'mohammadalisadraei@gmail.com'
@@ -58,7 +59,8 @@ class ProxyMan:
                                 self.userMan.useTraffic(clientAddress[0],len(data))
                             else:
                                 break
-                        rcvData = self.injector.inject(rcvData)
+                        response = self.injector.inject(HTTPResponse(rcvData))
+                        rcvData = response.getFullPacket()
                         clientSocket.send(rcvData)
                 else:
                     break

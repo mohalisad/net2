@@ -13,28 +13,21 @@ class InjectMan:
         myStyle       = STYLE.format(FOREGROUND,BACKGROUND,FONT_SIZE)
         self.html_msg = HTML.format(myStyle,injectMsg).encode()
 
-    def inject(self,packet):
+    def inject(self,response):
         if self.enable:
-            headerLoc   = packet.find(b'\r\n\r\n')
-            header      = packet[:headerLoc].decode()
-            payload     = packet[headerLoc+2:]
-            html_loc    = header.find('html')
-            if html_loc != -1:
-                body_loc    = payload.find(b'body')
-                if body_loc != -1:
-                    header = header.split('\r\n')
-                    if int(header[0].split()[1]) == 200:
-                        new_header = ""
-                        for line in header:
-                            key = line.split(':')[0]
-                            if key == 'Content-Length':
-                                length =  int(line.split(':')[1])
-                                length += len(self.html_msg)
-                                new_header += 'Content-Length: {}\r\n'.format(length)
-                            else:
-                                new_header += line + '\r\n'
+            if response.getResponseState() == 200:
+                if response.getHeader('Content-Type').find('html') != -1:
+                    payload = response.getPayload()
+                    body_loc = payload.find(b'body')
+                    if body_loc != -1:
+                        length = response.getHeader('Content-Length')
+                        if length != "":
+                            try:
+                                length = int(length) + len(self.html_msg)
+                                response.setHeader('Content-Length',str(length))
+                            except:
+                                pass
                         body_loc += payload[body_loc:].find(b'>') + 1
                         payload = payload[:body_loc] + self.html_msg + payload[body_loc:]
-                        print(new_header)
-                        return new_header.encode() + payload
-        return packet
+                        response.setPayload(payload)
+        return response
