@@ -1,4 +1,4 @@
-def urlConvert(self,url):
+def urlConvert(url):
     url     = str(url).lower()
     wwwLoc  = url.find('www.')
     httpLoc = url.find('http://')
