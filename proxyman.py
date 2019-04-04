@@ -62,8 +62,7 @@ class ProxyMan:
                             else:
                                 break
                         response = self.injector.inject(HTTPResponse(rcvData))
-                        rcvData = response.getFullPacket()
-                        self.cache.cache(response.getHeader('pragma'),rcvData)#CHANGE HERE
+                        self.cache.cache(response, httpRequest)#CHANGE HERE
                         clientSocket.send(rcvData)
                 else:
                     break
