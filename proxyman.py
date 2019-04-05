@@ -7,7 +7,7 @@ from postman      import PostMan
 from userman      import UserMan
 from injectman    import InjectMan
 from httpresponse import HTTPResponse
-from cacheman     import CacheMan
+#from cacheman     import CacheMan
 
 CONFIG_FILE  = 'config.json'
 ADMIN_MAIL   = 'mohammadalisadraei@gmail.com'
@@ -22,7 +22,7 @@ class ProxyMan:
         self.post     = PostMan(ADMIN_MAIL)
         self.userMan  = UserMan(conf.getUsers())
         self.injector = InjectMan(conf.getInjectEnable(),conf.getInjectMsg())
-        self.cache    = CacheMan(conf.getCacheEnable(),conf.getCacheSize())
+        #self.cache    = CacheMan(conf.getCacheEnable(),conf.getCacheSize())
 
         self.log.write('Proxy launched')
 
@@ -47,7 +47,7 @@ class ProxyMan:
                 rcvData = bytes()
                 httpRequest = clientSocket.recv(RCV_MAX_SIZE)
                 if httpRequest:
-                    httpRequest,webserver, port = self.rqman.convert(httpRequest)
+                    httpRequest,url,webserver, port = self.rqman.convert(httpRequest)
                     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                         s.settimeout(50)
                         s.connect((webserver, port))
@@ -62,7 +62,7 @@ class ProxyMan:
                             else:
                                 break
                         response = self.injector.inject(HTTPResponse(rcvData))
-                        self.cache.cache(response, httpRequest)#CHANGE HERE
+                        rcvData = response.getFullPacket()#CHANGE HERE
                         clientSocket.send(rcvData)
                 else:
                     break

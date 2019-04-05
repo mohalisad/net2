@@ -6,9 +6,11 @@ class HTTPResponse:
         self.header0 = header[0]
         header       = header[1:]
         for line in header:
-            pair = line.split(':')
-            self.header[pair[0].strip()] = pair[1].strip()
-        self.payload = packet[headerLoc+4:]
+            parts = line.split(';')
+            for part in parts:
+                pair = part.split(':')
+                self.header[pair[0].strip()] = pair[1].strip()
+        self.payload = packet[headerLoc+4:]ß
     def getHeader(self, key):
         if key in self.header:
             return self.header[key]
@@ -29,3 +31,7 @@ class HTTPResponse:
         return self.getEncodedHeader() + self.payload
     def getResponseState(self):
         return int(self.header0.split()[1])
+    def setUesID(self,useID):
+        self.useID = useID
+    def getUesID(self):
+        return useID
