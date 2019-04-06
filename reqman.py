@@ -1,3 +1,5 @@
+from httprequest import HTTPRequest
+
 def urlConvert(url):
     url     = str(url).lower()
     wwwLoc  = url.find('www.')
@@ -27,33 +29,15 @@ class RequsetMan:
             else:
                 self.block.append(urlConvert(item['URL']))
     def convert(self,httpReq):
-        convertedReq = ''
-        host = ''
-        loc = httpReq.find(b'\r\n\r\n')
-        httpRequest = httpReq[:loc].decode().replace("HTTP/1.1","HTTP/1.0")
-        lines = httpRequest.split('\r\n')
-        url   = lines[0].split()[1]
-        lines = lines[1:]
-        for line in lines:
-            parts = line.split(';')
-            for part in parts:
-                key = part.split(':')[0]
-                if key == 'Host':
-                    host = line[line.index(':')+1:].strip()
-                if key != 'Proxy-connection' and key != 'Accept-Encoding':
-                    if key == 'User-Agent' and self.privacyEnable:
-                        convertedReq += 'User-Agent: ' + self.userAgent + '\r\n'
-                    else:
-                        convertedReq += line + '\r\n'
-        host = host.split(':')
-        webserver = host[0]
-        port = 80
-        if len(host) > 1:
-            port = int(host[1])
-        convertedURL = urlConvert(webserver)
+        if self.privacyEnable:
+            request = HTTPRequest(httpReq,self.userAgent)
+        else:
+            request = HTTPRequest(httpReq)
+
+        convertedURL = urlConvert(request.getWebServer())
         if self.restrict:
             if convertedURL in self.blockNotify:
                 raise ValueError(True ,convertedURL,'blocked url')
             if convertedURL in self.block:
                 raise ValueError(False,convertedURL,'blocked url')
-        return convertedReq.encode() + httpReq[loc+2:],url,webserver,port
+        return request

@@ -47,11 +47,11 @@ class ProxyMan:
                 rcvData = bytes()
                 httpRequest = clientSocket.recv(RCV_MAX_SIZE)
                 if httpRequest:
-                    httpRequest,url,webserver, port = self.rqman.convert(httpRequest)
+                    httpRequest = self.rqman.convert(httpRequest)
                     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                        s.settimeout(50)
-                        s.connect((webserver, port))
-                        s.sendall(httpRequest)
+                        s.settimeout(10)
+                        s.connect((httpRequest.getWebServer(), httpRequest.getPort()))
+                        s.sendall(httpRequest.getEncodedRequest())
                         while True:
                             if self.userMan.getRemainingTraffic(clientAddress[0]) <= 0:
                                 raise ValueError('no traffic')
