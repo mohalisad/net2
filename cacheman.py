@@ -8,14 +8,17 @@ class CacheMan:
         self.useID  = 0
         self.cache  = {}
 
-    def cache(self, request, response):
+    def addOrLoadCache(self, request, response):
+        if response.getResponseState() == 304:
+            return self.cache[request.getFullURL()]
         if response.getHeader('Pragma') != 'no-cache' and response.getResponseState() == 200:
+            url = request.getFullURL()
             if not url in self.cache:
                 self.length += 1
             self.removeLRU()
-            self[request.getFullURL()] = response
-            self[request.getFullURL()].setUesID(self.getNextUseID())
-            print("cached")
+            self.cache[url] = response
+            self.cache[url].setUesID(self.getNextUseID())
+        return response
     def getNextUseID(self):
         self.useID += 1
         return self.useID
@@ -32,5 +35,10 @@ class CacheMan:
             del self.cache[key]
             self.length -= 1
 
-    def loadFromCache(self, request):
-        pass
+    def isItInCache(self, request):
+        if request.getFullURL() in self.cache:
+            date = self.cache[request.getFullURL()].getHeader('Date')
+            if date != '':
+                request.addToRequest('If-Modified-Since',date)
+                return True
+        return False

@@ -7,11 +7,12 @@ from postman      import PostMan
 from userman      import UserMan
 from injectman    import InjectMan
 from httpresponse import HTTPResponse
-#from cacheman     import CacheMan
+from cacheman     import CacheMan
 
 CONFIG_FILE  = 'config.json'
 ADMIN_MAIL   = 'mohammadalisadraei@gmail.com'
-RCV_MAX_SIZE = 100000000
+RCV_MAX_SIZE = 10000
+TIME_OUT     = 30
 
 class ProxyMan:
     def __init__(self):
@@ -22,7 +23,7 @@ class ProxyMan:
         self.post     = PostMan(ADMIN_MAIL)
         self.userMan  = UserMan(conf.getUsers())
         self.injector = InjectMan(conf.getInjectEnable(),conf.getInjectMsg())
-        #self.cache    = CacheMan(conf.getCacheEnable(),conf.getCacheSize())
+        self.cache    = CacheMan(conf.getCacheEnable(),conf.getCacheSize())
 
         self.log.write('Proxy launched')
 
@@ -45,11 +46,12 @@ class ProxyMan:
         try:
             while True:
                 rcvData = bytes()
-                httpRequest = clientSocket.recv(RCV_MAX_SIZE)
-                if httpRequest:
-                    httpRequest = self.rqman.convert(httpRequest)
+                httpRequestBytes = clientSocket.recv(RCV_MAX_SIZE)
+                if httpRequestBytes:
+                    httpRequest = self.rqman.convert(httpRequestBytes)
+                    cache_check = self.cache.isItInCache(httpRequest)
                     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                        s.settimeout(10)
+                        s.settimeout(TIME_OUT)
                         s.connect((httpRequest.getWebServer(), httpRequest.getPort()))
                         s.sendall(httpRequest.getEncodedRequest())
                         while True:
@@ -61,17 +63,21 @@ class ProxyMan:
                                 self.userMan.useTraffic(clientAddress[0],len(data))
                             else:
                                 break
-                        response = self.injector.inject(HTTPResponse(rcvData))
-                        rcvData = response.getFullPacket()#CHANGE HERE
+                        response = HTTPResponse(rcvData)
+                        response = self.cache.addOrLoadCache(httpRequest,response)
+                        response = self.injector.inject(response)
+                        rcvData = response.getFullPacket()
                         clientSocket.send(rcvData)
+
                 else:
                     break
         except ValueError as err:
             if len(err.args) == 3:
                 if err.args[0] :
                     self.post.sendBlockedAccess(clientAddress[0],err.args[1])
-        except:
-            pass
+        # except:
+        #     pass
+
         finally:
             clientSocket.close()
 

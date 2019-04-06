@@ -12,7 +12,7 @@ class HTTPRequest:
             key = pair[0]
             if key == 'Host':
                 host = pair[1].strip()
-            if key != 'Proxy-connection' and key != 'Accept-Encoding' and key != 'If-Modified-Since':
+            if key != 'Proxy-connection' and key != 'Accept-Encoding' and key != 'If-Modified-Since' and key != 'If-None-Match':
                 if key == 'User-Agent' and agent is not None:
                     convertedReq += 'User-Agent: ' + agent + '\r\n'
                 else:
@@ -26,7 +26,7 @@ class HTTPRequest:
         self.payload     = httpReq[loc+2:]
 
     def addToRequest(self,key,value):
-        self.httpRequest += "{} :{}\r\n".format(key,value)
+        self.httpRequest += "{}: {}\r\n".format(key,value)
 
     def getWebServer(self):
         return self.webserver
