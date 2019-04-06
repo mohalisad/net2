@@ -37,5 +37,8 @@ class HTTPRequest:
     def getFullURL(self):
         return self.fullURL
 
+    def getHTTPRequest(self):
+        return self.httpRequest
+
     def getEncodedRequest(self):
         return self.httpRequest.encode() + self.payload

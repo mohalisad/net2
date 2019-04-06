@@ -9,6 +9,13 @@ from injectman    import InjectMan
 from httpresponse import HTTPResponse
 from cacheman     import CacheMan
 
+
+REQUEST_LOG  = 'Proxy sent request to server with headers:\n\
+----------------------------------------------------------------------\n{}\
+----------------------------------------------------------------------'
+RESPONSE_LOG  = 'Server sent response to proxy with headers:\n\
+----------------------------------------------------------------------\n{}\
+----------------------------------------------------------------------'
 CONFIG_FILE  = 'config.json'
 ADMIN_MAIL   = 'mohammadalisadraei@gmail.com'
 RCV_MAX_SIZE = 10000
@@ -50,10 +57,12 @@ class ProxyMan:
                 if httpRequestBytes:
                     httpRequest = self.rqman.convert(httpRequestBytes)
                     cache_check = self.cache.isItInCache(httpRequest)
+                    self.log.write('Proxy opening connection to server {} ... Connection opened.'.format(httpRequest.getWebServer()))
                     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                         s.settimeout(TIME_OUT)
                         s.connect((httpRequest.getWebServer(), httpRequest.getPort()))
                         s.sendall(httpRequest.getEncodedRequest())
+                        self.log.write(REQUEST_LOG.format(httpRequest.getHTTPRequest()))
                         while True:
                             if self.userMan.getRemainingTraffic(clientAddress[0]) <= 0:
                                 raise ValueError('no traffic')
@@ -68,15 +77,15 @@ class ProxyMan:
                         response = self.injector.inject(response)
                         rcvData = response.getFullPacket()
                         clientSocket.send(rcvData)
-
+                        self.log.write(RESPONSE_LOG.format(response.getFullHeader()))
                 else:
                     break
         except ValueError as err:
             if len(err.args) == 3:
                 if err.args[0] :
                     self.post.sendBlockedAccess(clientAddress[0],err.args[1])
-        # except:
-        #     pass
+        except:
+            pass
 
         finally:
             clientSocket.close()

@@ -23,11 +23,12 @@ class HTTPResponse:
     def setPayload(self,payload):
         self.payload = payload
     def getEncodedHeader(self):
+        return (self.getFullHeader() + '\r\n').encode()
+    def getFullHeader(self):
         header = self.header0 + '\r\n'
         for key,value in self.header.items():
             header += '{}: {}\r\n'.format(key,value)
-        header += '\r\n'
-        return header.encode()
+        return header
     def getFullPacket(self):
         return self.getEncodedHeader() + self.payload
     def getResponseState(self):
