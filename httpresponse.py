@@ -11,7 +11,6 @@ class HTTPResponse:
                 pair = part.split(':')
                 if len(pair)>1:
                     self.header[pair[0].strip()] = pair[1].strip()
-                    #print(part)
         self.payload = packet[headerLoc+4:]
     def getHeader(self, key):
         if key in self.header:

@@ -38,5 +38,4 @@ class HTTPRequest:
         return self.fullURL
 
     def getEncodedRequest(self):
-        print(self.httpRequest)
         return self.httpRequest.encode() + self.payload

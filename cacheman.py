@@ -8,14 +8,14 @@ class CacheMan:
         self.useID  = 0
         self.cache  = {}
 
-    def cache(self, url, response):
-        if response.getHeader('Pragma') != 'no-cache':
+    def cache(self, request, response):
+        if response.getHeader('Pragma') != 'no-cache' and response.getResponseState() == 200:
             if not url in self.cache:
                 self.length += 1
             self.removeLRU()
-            self[url] = response
-            self[url].setUesID(self.getNextUseID())
-
+            self[request.getFullURL()] = response
+            self[request.getFullURL()].setUesID(self.getNextUseID())
+            print("cached")
     def getNextUseID(self):
         self.useID += 1
         return self.useID
